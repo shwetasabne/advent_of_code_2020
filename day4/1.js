@@ -3,7 +3,7 @@ const readline = require('readline');
 const path = require('path');
 
 function createPassport(line, passport) {
-  const kvs = line.split(' ');
+  const kvs = line.trim().split(' ');
   const keys = [];
   for (let i = 0; i < kvs.length; i++) {
     keys.push(kvs[i].split(':')[0])
@@ -20,9 +20,13 @@ function validatePassport(passport) {
   'ecl',
   'pid'];
 
-  const intersection = passport.filter(x => requiredKeys.includes(x));
-
-  if (intersection.length === requiredKeys.length) {
+  if (passport.includes('byr') &&
+  passport.includes('iyr') &&
+  passport.includes('eyr') &&
+  passport.includes('hgt') &&
+  passport.includes('hcl') &&
+  passport.includes('ecl') &&
+  passport.includes('pid')) {
     return 1;
   } else {
     return 0;
@@ -52,6 +56,7 @@ async function countValidPassports(inputFilePath) {
       tempPassport = createPassport(line, tempPassport);
     }
   }
+  validPassports += validatePassport(tempPassport);
   console.log(`Total passports ${totalPassports}`)
   return validPassports;
 }
