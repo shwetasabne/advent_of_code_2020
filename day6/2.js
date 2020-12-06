@@ -2,35 +2,30 @@ const fs = require('fs');
 const readline = require('readline');
 const path = require('path');
 
-function constructQuestionBank(line, personNumber, questionBankObject = {}) {
+function constructQuestionBank(line, questionBankObject = {}) {
   var temp = line.split('');
-  questionBankObject[personNumber] = temp;
+  for (let i =0; i < temp.length; i++) {
+    if (questionBankObject[temp[i]]) {
+      let val = questionBankObject[temp[i]];
+      questionBankObject[temp[i]] = ++val
+    } else {
+      questionBankObject[temp[i]] = 1;
+    }
+  }
   return questionBankObject;
 }
 
-function countCommonYes(questionBank) {
+function countCommonYes(questionBank, personCount) {
+  console.log(`questionBank is ${JSON.stringify(questionBank, null, 2)} and person is ${personCount}`)
+  let count = 0;
   const keys = Object.keys(questionBank);
-  const tempMap = new Map();
-  for (let i=0; i < keys.length; i++) {
+  for (let i =0; i < keys.length; i++) {
     const value = questionBank[keys[i]];
-    for (let j=0; j < value.length; j++) {
-      if (tempMap.has(value[j])) {
-        const currCount = tempMap.get(value[j]);
-        tempMap.set(value[j], currCount+1);
-      } else {
-        tempMap.set(value[j], 1);
-      }
+    if (value === personCount) {
+      count++;
     }
   }
-
-  let commonYesCount = 0;
-  tempMap.forEach((value, key, map) => {
-    if (value === keys.length) {
-      commonYesCount++;
-    }
-  });
-  console.log(`for ${JSON.stringify(questionBank, null, 2)} commonYesCount ${commonYesCount}`)
-  return commonYesCount;
+  return count;
 }
 
 async function countSumOfYes(inputFilePath) {
@@ -42,18 +37,18 @@ async function countSumOfYes(inputFilePath) {
   });
 
   let questionBank = {};
-  let person = 1;
+  let person = 0;
   let sum = 0;
   for await (const line of rl) {
     //console.log(`--- line is ${line}`)
     if (line === '') {
-      //console.log(`questionBank is ${JSON.stringify(questionBank, null, 2)}`);
-      sum = sum + countCommonYes(questionBank)
+      console.log(`person ${person} questionBank is ${JSON.stringify(questionBank, null, 2)}`);
+      sum = sum + countCommonYes(questionBank, person)
       questionBank = {};
-      person = 1;
+      person = 0;
     } else {
       // implies keep constructing question bank
-      questionBank = constructQuestionBank(line, person, questionBank);
+      questionBank = constructQuestionBank(line, questionBank);
       person++;
     }
   }
